@@ -1,7 +1,8 @@
 const fs = require('fs')
 var _ = require('underscore')
 var ventas
-var totalesCorte = []
+var totalesCorte = {'totalEfectivo':0,'totalDolares':0,'totalTCredito':0,
+                    'totalAmex':0, 'totalPropina':0, 'totalGastos':0, 'granTotal':0}
 const dolarMX = 18
 
 function leerJSON(){    
@@ -10,47 +11,40 @@ function leerJSON(){
 
 const totalesCortes = () =>{
         leerJSON();
-        totalEfectivo = 0;
-        totalDolares = 0;
-        totalT_Credito = 0;
-        totalAMEX = 0;
-        totales = 0;
-        propinas = 0;
         
         for (var corte in ventas) {
             if (ventas.hasOwnProperty(corte)) {
                 for (var iter in ventas[corte]['ingresos']) {
                     if (ventas[corte]['ingresos'].hasOwnProperty(iter)) {
                         if (ventas[corte]['ingresos'][iter]['moneda'] === 'EFECTIVO') {
-                            totalEfectivo += ventas[corte]['ingresos'][iter]['cantidadOriginal']
+                            totalesCorte['totalEfectivo'] += ventas[corte]['ingresos'][iter]['cantidadOriginal']
+                            totalesCorte['granTotal'] += ventas[corte]['ingresos'][iter]['cantidadOriginal']
                         }
                         if (ventas[corte]['ingresos'][iter]['moneda'] === 'DOLARES') {
-                            totalDolares += ((ventas[corte]['ingresos'][iter]['cantidadOriginal']) * dolarMX)
+                            totalesCorte['totalDolares'] += ((ventas[corte]['ingresos'][iter]['cantidadOriginal']) * dolarMX)
+                            totalesCorte['granTotal'] += ((ventas[corte]['ingresos'][iter]['cantidadOriginal']) * dolarMX)
                         }
                         if (ventas[corte]['ingresos'][iter]['moneda'] === 'T CREDITO') {
-                            totalT_Credito += ventas[corte]['ingresos'][iter]['cantidadOriginal']
+                            totalesCorte['totalTCredito'] += ventas[corte]['ingresos'][iter]['cantidadOriginal']
+                            totalesCorte['granTotal'] += ventas[corte]['ingresos'][iter]['cantidadOriginal']
                         }
                         if (ventas[corte]['ingresos'][iter]['moneda'] === 'AMEX') {
-                            totalAMEX += ventas[corte]['ingresos'][iter]['cantidadOriginal']
+                            totalesCorte['totalAmex'] += ventas[corte]['ingresos'][iter]['cantidadOriginal']
+                            totalesCorte['granTotal'] += ventas[corte]['ingresos'][iter]['cantidadOriginal']
                         }
+                        
+                        totalesCorte['totalPropina'] += ventas[corte]['ingresos'][iter]['propinas']
+                        totalesCorte['granTotal'] += ventas[corte]['ingresos'][iter]['propinas']
+
+                        totalesCorte['totalGastos'] += ventas[corte]['ingresos'][iter]['gastos']
+                        totalesCorte['granTotal'] -= ventas[corte]['ingresos'][iter]['gastos']
                     }
-                    propinas += ventas[corte]['ingresos'][iter]['propinas']
-                    totales += (totalEfectivo + totalDolares + totalT_Credito + totalAMEX)
                 }
             }
-            var registro = {
-                'Corte': ventas[corte]['id'], 'totalEfectivo': totalEfectivo,
-                'totalDolares': totalDolares, 'totalT_Credito': totalT_Credito,
-                'totalAMEX': totalAMEX, 'Propina': propinas, 'Totales': totales
-            };
-            totalesCorte.push(registro);
-            totalEfectivo = 0;
-            totalDolares = 0;
-            totalT_Credito = 0;
-            totalAMEX = 0;
-            propinas = 0;
-            totales = 0;
         }
+        
+        
+
         totalesCorte = JSON.stringify(totalesCorte)
         return totalesCorte
     }
